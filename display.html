@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+</head>
+<body>
+    <h1>Страница Display</h1>
+    <p>Здесь отображаются данные всех пользователей, которые посещали сайт:</p>
+    <div id="user-data"></div>
+
+    <script>
+        // Получение всех данных из localStorage
+        const allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+
+        // Элемент для отображения данных
+        const userDataDiv = document.getElementById('user-data');
+
+        if (allUsers.length === 0) {
+            userDataDiv.innerHTML = '<p>Данных нет.</p>';
+        } else {
+            allUsers.forEach((user, index) => {
+                const userDiv = document.createElement('div');
+                userDiv.innerHTML = `
+                    <h3>Пользователь ${index + 1}</h3>
+                    <p><strong>User-Agent:</strong> ${user.userAgent}</p>
+                    <p><strong>Язык:</strong> ${user.language}</p>
+                    <p><strong>Платформа:</strong> ${user.platform}</p>
+                    <p><strong>Размер экрана:</strong> ${user.screenSize}</p>
+                    <p><strong>IP-адрес:</strong> ${user.ipAddress}</p>
+                    <p><strong>Время визита:</strong> ${user.visitTime}</p>
+                    <hr>
+                `;
+                userDataDiv.appendChild(userDiv);
+            });
+        }
+    </script>
+</body>
+</html>
